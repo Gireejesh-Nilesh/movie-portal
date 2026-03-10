@@ -5,12 +5,13 @@ export const fetchHomeDataThunk = createAsyncThunk(
   "movies/fetchHomeData",
   async (_, { rejectWithValue }) => {
     try {
-      const [trendingRes, popularMoviesRes, popularTVRes, peopleRes] = await Promise.all([
-        discoverApi.trending("?page=1&mediaType=all&timeWindow=week"),
-        discoverApi.popularMovies(1),
-        discoverApi.popularTV(1),
-        discoverApi.people(1),
-      ]);
+      const [trendingRes, popularMoviesRes, popularTVRes, peopleRes] =
+        await Promise.all([
+          discoverApi.trending("?page=1&mediaType=all&timeWindow=week"),
+          discoverApi.popularMovies(1),
+          discoverApi.popularTV(1),
+          discoverApi.people(1),
+        ]);
 
       return {
         trending: trendingRes.data.results || [],
@@ -21,5 +22,5 @@ export const fetchHomeDataThunk = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.message || "Failed to load home data");
     }
-  }
+  },
 );

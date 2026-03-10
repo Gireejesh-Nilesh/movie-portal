@@ -2,6 +2,8 @@ import { useEffect, useRef } from "react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
+const loadedProfileCache = new Set();
+
 export default function PersonCard({ item, onLongHover, onHoverEnd }) {
   if (!item || !item.id) {
     return null;
@@ -17,7 +19,11 @@ export default function PersonCard({ item, onLongHover, onHoverEnd }) {
   }
 
   const timerRef = useRef(null);
+  const imageTimeoutRef = useRef(null);
   const [imageFailed, setImageFailed] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(
+    item?.profileUrl ? loadedProfileCache.has(item.profileUrl) : false,
+  );
 
   const handleMouseEnter = () => {
     timerRef.current = window.setTimeout(() => {
@@ -35,12 +41,29 @@ export default function PersonCard({ item, onLongHover, onHoverEnd }) {
 
   useEffect(() => {
     setImageFailed(false);
+    setImageLoaded(item?.profileUrl ? loadedProfileCache.has(item.profileUrl) : false);
+
+    if (imageTimeoutRef.current) {
+      window.clearTimeout(imageTimeoutRef.current);
+      imageTimeoutRef.current = null;
+    }
+
+    if (item?.profileUrl && !loadedProfileCache.has(item.profileUrl)) {
+      imageTimeoutRef.current = window.setTimeout(() => {
+        setImageFailed(true);
+        setImageLoaded(false);
+        imageTimeoutRef.current = null;
+      }, 8000);
+    }
   }, [item?.id, item?.profileUrl]);
 
   useEffect(() => {
     return () => {
       if (timerRef.current) {
         window.clearTimeout(timerRef.current);
+      }
+      if (imageTimeoutRef.current) {
+        window.clearTimeout(imageTimeoutRef.current);
       }
     };
   }, []);
@@ -54,13 +77,36 @@ export default function PersonCard({ item, onLongHover, onHoverEnd }) {
       onMouseLeave={handleMouseLeave}
     >
       <article className="group relative h-[300px] w-44 shrink-0 overflow-hidden rounded-2xl border border-white/10 bg-white/5 text-white">
-        <div className="h-full overflow-hidden bg-slate-900">
+        <div className="relative h-full overflow-hidden bg-slate-900">
+          {!imageFailed && !imageLoaded && (
+            <div className="media-card-skeleton absolute inset-0 z-[1] overflow-hidden bg-slate-900" />
+          )}
           {item.profileUrl && !imageFailed ? (
             <img
               src={item.profileUrl}
               alt={item.name}
-              onError={() => setImageFailed(true)}
-              className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+              onLoad={() => {
+                if (item.profileUrl) {
+                  loadedProfileCache.add(item.profileUrl);
+                }
+                if (imageTimeoutRef.current) {
+                  window.clearTimeout(imageTimeoutRef.current);
+                  imageTimeoutRef.current = null;
+                }
+                setImageLoaded(true);
+              }}
+              onError={() => {
+                if (imageTimeoutRef.current) {
+                  window.clearTimeout(imageTimeoutRef.current);
+                  imageTimeoutRef.current = null;
+                }
+                setImageFailed(true);
+                setImageLoaded(false);
+              }}
+              className={[
+                "h-full w-full object-cover transition duration-500 group-hover:scale-105",
+                imageLoaded ? "opacity-100" : "opacity-0",
+              ].join(" ")}
               loading="lazy"
             />
           ) : (

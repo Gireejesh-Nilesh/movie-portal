@@ -26,8 +26,11 @@ const historySlice = createSlice({
   },
 });
 
-export const { setHistoryLoading, setHistory, setHistoryError, clearHistoryState } =
-  historySlice.actions;
+export const {
+  setHistoryLoading,
+  setHistory,
+  setHistoryError,
+  clearHistoryState,
+} = historySlice.actions;
 
 export default historySlice.reducer;
-

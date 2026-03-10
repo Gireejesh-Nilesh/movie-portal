@@ -10,6 +10,7 @@ const initialState = {
   user: null,
   isAuthenticated: false,
   loading: false,
+  initialized: false,
   error: null,
 };
 
@@ -29,11 +30,13 @@ const authSlice = createSlice({
       })
       .addCase(signupThunk.fulfilled, (state, action) => {
         state.loading = false;
+        state.initialized = true;
         state.user = action.payload;
         state.isAuthenticated = true;
       })
       .addCase(signupThunk.rejected, (state, action) => {
         state.loading = false;
+        state.initialized = true;
         state.error = action.payload;
       })
       .addCase(loginThunk.pending, (state) => {
@@ -42,11 +45,13 @@ const authSlice = createSlice({
       })
       .addCase(loginThunk.fulfilled, (state, action) => {
         state.loading = false;
+        state.initialized = true;
         state.user = action.payload;
         state.isAuthenticated = true;
       })
       .addCase(loginThunk.rejected, (state, action) => {
         state.loading = false;
+        state.initialized = true;
         state.error = action.payload;
       })
       .addCase(fetchMeThunk.pending, (state) => {
@@ -54,11 +59,13 @@ const authSlice = createSlice({
       })
       .addCase(fetchMeThunk.fulfilled, (state, action) => {
         state.loading = false;
+        state.initialized = true;
         state.user = action.payload;
         state.isAuthenticated = Boolean(action.payload);
       })
       .addCase(fetchMeThunk.rejected, (state) => {
         state.loading = false;
+        state.initialized = true;
         state.user = null;
         state.isAuthenticated = false;
       })
@@ -67,11 +74,13 @@ const authSlice = createSlice({
       })
       .addCase(logoutThunk.fulfilled, (state) => {
         state.loading = false;
+        state.initialized = true;
         state.user = null;
         state.isAuthenticated = false;
       })
       .addCase(logoutThunk.rejected, (state, action) => {
         state.loading = false;
+        state.initialized = true;
         state.error = action.payload;
       });
   },

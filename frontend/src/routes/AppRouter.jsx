@@ -3,6 +3,7 @@ import HomePage from "../pages/Home/HomePage";
 import SearchPage from "../pages/Search/SearchPage";
 import MoviesPage from "../pages/Movies/MoviesPage";
 import TVShowsPage from "../pages/TVShows/TVShowsPage";
+import AboutPage from "../pages/About/AboutPage";
 import MovieDetailsPage from "../pages/MovieDetails/MovieDetailsPage";
 import TVDetailsPage from "../pages/TVDetails/TVDetailsPage";
 import PersonDetailsPage from "../pages/PersonDetails/PersonDetailsPage";
@@ -12,14 +13,17 @@ import LoginPage from "../pages/Login/LoginPage";
 import SignupPage from "../pages/Signup/SignupPage";
 import AdminPage from "../pages/Admin/AdminPage";
 import DashboardPage from "../pages/Dashboard/DashboardPage";
+import RouteTransitionLoader from "../components/common/RouteTransitionLoader";
 import ProtectedRoute from "./ProtectedRoute";
 import AdminRoute from "./AdminRoute";
 
 export default function AppRouter() {
   return (
     <BrowserRouter>
+      <RouteTransitionLoader />
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/about" element={<AboutPage />} />
         <Route path="/search" element={<SearchPage />} />
         <Route path="/movies" element={<MoviesPage />} />
         <Route path="/tv-shows" element={<TVShowsPage />} />

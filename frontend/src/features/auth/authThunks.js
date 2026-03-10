@@ -10,7 +10,7 @@ export const signupThunk = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.message || "Signup failed");
     }
-  }
+  },
 );
 
 export const loginThunk = createAsyncThunk(
@@ -22,7 +22,7 @@ export const loginThunk = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.message || "Login failed");
     }
-  }
+  },
 );
 
 export const fetchMeThunk = createAsyncThunk(
@@ -34,7 +34,7 @@ export const fetchMeThunk = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.message || "Unable to fetch user");
     }
-  }
+  },
 );
 
 export const logoutThunk = createAsyncThunk(
@@ -46,5 +46,5 @@ export const logoutThunk = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.message || "Logout failed");
     }
-  }
+  },
 );

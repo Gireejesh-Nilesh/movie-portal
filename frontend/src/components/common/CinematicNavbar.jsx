@@ -2,13 +2,6 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { logoutThunk } from "../../features/auth/authThunks";
 
-const navItems = [
-  { label: "Home", to: "/" },
-  { label: "Search", to: "/search" },
-  { label: "Movies", to: "/movies" },
-  { label: "TV Shows", to: "/tv-shows" },
-];
-
 function ArrowIcon({ direction = "right" }) {
   const isLeft = direction === "left";
   return (
@@ -32,7 +25,22 @@ export default function CinematicNavbar() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { isAuthenticated, user, loading } = useAppSelector((state) => state.auth);
-  const profileLabel = user?.name?.charAt(0)?.toUpperCase() || "G";
+  const profileLabel = String(user?.name || "Guest").trim().charAt(0).toUpperCase() || "G";
+  const navItems = [
+    { label: "Home", to: "/" },
+    { label: "Search", to: "/search" },
+    { label: "Movies", to: "/movies" },
+    { label: "TV Shows", to: "/tv-shows" },
+  ];
+  const aboutItem = { label: "About Us", to: "/about" };
+
+  const navItemClass = (isActive) =>
+    [
+      "rounded-full border px-4 py-2 text-sm transition",
+      isActive
+        ? "border-amber-200/40 bg-gradient-to-r from-amber-400/40 via-orange-400/25 to-transparent text-amber-100 shadow-[0_0_25px_-10px_rgba(255,180,60,0.9)]"
+        : "border-white/20 bg-white/5 text-white/80 hover:border-white/40 hover:text-white",
+    ].join(" ");
 
   const handleAuthArrowClick = async () => {
     if (!isAuthenticated) {
@@ -46,7 +54,7 @@ export default function CinematicNavbar() {
 
   const handleProfileClick = () => {
     if (isAuthenticated) {
-      navigate("/dashboard");
+      navigate(user?.role === "admin" ? "/admin" : "/dashboard");
       return;
     }
     navigate("/login");
@@ -54,38 +62,58 @@ export default function CinematicNavbar() {
 
   return (
     <header className="relative rounded-3xl border border-white/15 bg-black/45 px-3 py-3 backdrop-blur-md shadow-[0_12px_50px_-25px_rgba(255,80,20,0.7)]">
-      <div className="grid grid-cols-2 items-center gap-3 lg:grid-cols-3">
-        <nav className="hidden flex-wrap gap-2 lg:col-span-1 lg:flex">
-          {navItems.map((item) => {
-            return (
-              <NavLink
-                key={item.label}
-                to={item.to}
-                className={({ isActive }) =>
-                  [
-                    "rounded-full border px-4 py-2 text-sm transition",
-                    isActive
-                      ? "border-amber-200/40 bg-gradient-to-right from-amber-400/40 via-orange-400/25 to-transparent text-amber-100 shadow-[0_0_25px_-10px_rgba(255,180,60,0.9)]"
-                      : "border-white/20 bg-white/5 text-white/80 hover:border-white/40 hover:text-white",
-                  ].join(" ")
-                }
-              >
-                {item.label}
-              </NavLink>
-            );
-          })}
+      <div className="hidden items-center gap-3 lg:grid lg:grid-cols-3">
+        <nav className="flex flex-wrap gap-2 lg:col-span-1">
+          {navItems.map((item) => (
+            <NavLink
+              key={item.label}
+              to={item.to}
+              className={({ isActive }) => navItemClass(isActive)}
+            >
+              {item.label}
+            </NavLink>
+          ))}
         </nav>
 
         <div className="text-center">
-          <p className="text-4xl font-black uppercase tracking-[0.16em] text-red-300/85">CinePulse</p>
+          <p className="text-2xl font-black uppercase tracking-[0.14em] text-red-300/85 sm:text-3xl lg:text-4xl">CinePulse</p>
         </div>
 
         <div className="col-span-1 flex items-center justify-end gap-2 lg:col-span-1">
+          <NavLink
+            to={aboutItem.to}
+            className={({ isActive }) =>
+              [
+                "inline-flex rounded-full border px-3 py-2 text-xs transition sm:px-4 sm:text-sm",
+                isActive
+                  ? "border-amber-200/40 bg-gradient-to-r from-amber-400/40 via-orange-400/25 to-transparent text-amber-100 shadow-[0_0_25px_-10px_rgba(255,180,60,0.9)]"
+                  : "border-white/20 bg-white/5 text-white/80 hover:border-white/40 hover:text-white",
+              ].join(" ")
+            }
+          >
+            {aboutItem.label}
+          </NavLink>
+          {user?.role === "admin" && (
+            <NavLink
+              to="/admin"
+              className={({ isActive }) =>
+                [
+                  "inline-flex rounded-full border px-3 py-2 text-xs transition sm:px-4 sm:text-sm",
+                  isActive
+                    ? "border-amber-200/40 bg-gradient-to-r from-amber-400/40 via-orange-400/25 to-transparent text-amber-100 shadow-[0_0_25px_-10px_rgba(255,180,60,0.9)]"
+                    : "border-white/20 bg-white/5 text-white/80 hover:border-white/40 hover:text-white",
+                ].join(" ")
+              }
+            >
+              Admin
+            </NavLink>
+          )}
           <button
             onClick={handleAuthArrowClick}
             disabled={loading}
-            className="hidden h-10 w-10 place-items-center rounded-full border border-white/20 bg-white/10 text-white hover:bg-white/20 disabled:opacity-60 lg:grid"
+            className="grid h-10 w-10 place-items-center rounded-full border border-white/20 bg-white/10 text-white hover:bg-white/20 disabled:opacity-60"
             title={isAuthenticated ? "Logout" : "Login"}
+            aria-label={isAuthenticated ? "Logout" : "Login"}
           >
             <ArrowIcon direction={isAuthenticated ? "right" : "left"} />
           </button>
@@ -95,6 +123,79 @@ export default function CinematicNavbar() {
             aria-label="Open dashboard"
           >
             <span className="text-sm font-bold">{profileLabel}</span>
+          </button>
+        </div>
+      </div>
+
+      <div className="flex flex-col items-center justify-center gap-4 text-center lg:hidden">
+        <div>
+          <p className="text-2xl font-black uppercase tracking-[0.14em] text-red-300/85 sm:text-3xl">CinePulse</p>
+        </div>
+
+        <nav className="flex max-w-3xl flex-wrap justify-center gap-2">
+          {navItems.map((item) => (
+            <NavLink
+              key={`mobile-${item.label}`}
+              to={item.to}
+              className={({ isActive }) =>
+                [
+                  "rounded-full border px-3 py-2 text-xs transition sm:px-4 sm:text-sm",
+                  isActive
+                    ? "border-amber-200/40 bg-gradient-to-r from-amber-400/40 via-orange-400/25 to-transparent text-amber-100 shadow-[0_0_25px_-10px_rgba(255,180,60,0.9)]"
+                    : "border-white/20 bg-white/5 text-white/80 hover:border-white/40 hover:text-white",
+                ].join(" ")
+              }
+            >
+              {item.label}
+            </NavLink>
+          ))}
+        </nav>
+
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          <NavLink
+            to={aboutItem.to}
+            className={({ isActive }) =>
+              [
+                "inline-flex rounded-full border px-3 py-2 text-xs transition sm:px-4 sm:text-sm",
+                isActive
+                  ? "border-amber-200/40 bg-gradient-to-r from-amber-400/40 via-orange-400/25 to-transparent text-amber-100 shadow-[0_0_25px_-10px_rgba(255,180,60,0.9)]"
+                  : "border-white/20 bg-white/5 text-white/80 hover:border-white/40 hover:text-white",
+              ].join(" ")
+            }
+          >
+            {aboutItem.label}
+          </NavLink>
+          {user?.role === "admin" && (
+            <NavLink
+              to="/admin"
+              className={({ isActive }) =>
+                [
+                  "inline-flex rounded-full border px-3 py-2 text-xs transition sm:px-4 sm:text-sm",
+                  isActive
+                    ? "border-amber-200/40 bg-gradient-to-r from-amber-400/40 via-orange-400/25 to-transparent text-amber-100 shadow-[0_0_25px_-10px_rgba(255,180,60,0.9)]"
+                    : "border-white/20 bg-white/5 text-white/80 hover:border-white/40 hover:text-white",
+                ].join(" ")
+              }
+            >
+              Admin
+            </NavLink>
+          )}
+          <button
+            onClick={handleProfileClick}
+            className="grid h-10 w-10 place-items-center rounded-full border border-white/20 bg-white/10 text-white hover:bg-white/20"
+            aria-label="Open dashboard"
+          >
+            <span className="text-sm font-bold">{profileLabel}</span>
+          </button>
+          <button
+            onClick={handleAuthArrowClick}
+            disabled={loading}
+            className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs text-white transition hover:bg-white/20 disabled:opacity-60 sm:text-sm"
+            title={isAuthenticated ? "Logout" : "Login"}
+            aria-label={isAuthenticated ? "Logout" : "Login"}
+          >
+            <ArrowIcon direction={isAuthenticated ? "right" : "left"} />
+            <span>{isAuthenticated ? "Logout" : "Login"}</span>
           </button>
         </div>
       </div>

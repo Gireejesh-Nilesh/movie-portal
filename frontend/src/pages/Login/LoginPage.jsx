@@ -26,13 +26,13 @@ export default function LoginPage() {
 
   return (
     <main data-cursor-tone="dark" className="min-h-screen bg-black text-white">
-      <section className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_50%_120%,rgba(60,112,255,0.35),transparent_45%),linear-gradient(180deg,#07070c_0%,#03040a_55%,#05070f_100%)] p-5 md:p-6">
+      <section className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_15%_18%,rgba(24,66,180,0.42),transparent_35%),radial-gradient(circle_at_92%_14%,rgba(14,34,110,0.55),transparent_40%),radial-gradient(circle_at_50%_118%,rgba(60,112,255,0.22),transparent_55%),linear-gradient(180deg,#030712_0%,#040a1c_48%,#020617_100%)] p-4 sm:p-5 md:p-6">
         <div className="absolute inset-0 opacity-20 [background:linear-gradient(transparent_96%,rgba(255,255,255,0.08)_96%),linear-gradient(90deg,transparent_96%,rgba(255,255,255,0.08)_96%)] [background-size:22px_22px]" />
         <div className="relative">
           <CinematicNavbar />
 
-          <div className="mx-auto mt-8 w-full max-w-xl rounded-[32px] border border-white/15 bg-black/45 p-6 shadow-[0_35px_90px_-40px_rgba(60,112,255,0.75)] backdrop-blur-md md:p-8">
-            <h1 className="text-center text-4xl font-semibold tracking-tight">Welcome Back</h1>
+          <div className="mx-auto mt-6 w-full max-w-xl rounded-[32px] border border-white/15 bg-black/45 p-5 shadow-[0_35px_90px_-40px_rgba(60,112,255,0.75)] backdrop-blur-md sm:mt-8 md:p-8">
+            <h1 className="text-center text-3xl font-semibold tracking-tight sm:text-4xl">Welcome Back</h1>
             <p className="mt-3 text-center text-sm text-slate-300">
               Login to continue your watchlist, favorites and personalized feed.
             </p>

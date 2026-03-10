@@ -18,5 +18,5 @@ export const searchMultiThunk = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.message || "Search failed");
     }
-  }
+  },
 );

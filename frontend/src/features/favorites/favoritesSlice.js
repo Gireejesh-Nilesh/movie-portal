@@ -25,7 +25,7 @@ const favoritesSlice = createSlice({
           !(
             String(item.movieId) === String(action.payload.movieId) &&
             item.mediaType === action.payload.mediaType
-          )
+          ),
       );
     },
     setFavoritesError(state, action) {
@@ -43,4 +43,3 @@ export const {
 } = favoritesSlice.actions;
 
 export default favoritesSlice.reducer;
-

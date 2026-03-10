@@ -30,4 +30,3 @@ export const { setAdminLoading, setAdminMovies, setAdminUsers, setAdminError } =
   adminSlice.actions;
 
 export default adminSlice.reducer;
-

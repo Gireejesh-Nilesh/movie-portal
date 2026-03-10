@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import MediaCard from "../../components/cards/MediaCard";
+import CinematicLoader from "../../components/common/CinematicLoader";
 import PageFrame from "../../components/common/PageFrame";
 import { discoverApi } from "../../services/backend/discoverApi";
 
@@ -33,9 +34,11 @@ const getIndustry = (lang) => {
 
 export default function TVShowsPage() {
   const [items, setItems] = useState([]);
+  const [displayItems, setDisplayItems] = useState([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [isSorting, setIsSorting] = useState(false);
   const [error, setError] = useState("");
   const [sortBy, setSortBy] = useState("popularity_desc");
   const [languageFilter, setLanguageFilter] = useState("all");
@@ -51,6 +54,7 @@ export default function TVShowsPage() {
     const set = new Set(items.map((item) => getIndustry(item.originalLanguage)));
     return Array.from(set).sort();
   }, [items]);
+  const isInitialLoading = loading && items.length === 0;
 
   const visibleItems = useMemo(() => {
     let list = [...items];
@@ -74,6 +78,22 @@ export default function TVShowsPage() {
 
     return list;
   }, [items, languageFilter, industryFilter, sortBy]);
+
+  useEffect(() => {
+    if (items.length === 0) {
+      setDisplayItems([]);
+      setIsSorting(false);
+      return undefined;
+    }
+
+    setIsSorting(true);
+    const timer = window.setTimeout(() => {
+      setDisplayItems(visibleItems);
+      setIsSorting(false);
+    }, 220);
+
+    return () => window.clearTimeout(timer);
+  }, [visibleItems, items.length]);
 
   useEffect(() => {
     let active = true;
@@ -149,45 +169,47 @@ export default function TVShowsPage() {
           Explore binge-worthy series and trending TV content.
         </p>
 
-        <div className="mt-5 grid gap-3 rounded-xl border border-white/12 bg-slate-900/45 p-3 md:grid-cols-3">
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            className="rounded-lg border border-white/15 bg-black/40 px-3 py-2 text-sm text-white outline-none"
-          >
-            <option value="popularity_desc">Sort: Popularity (High to Low)</option>
-            <option value="rating_desc">Sort: Rating (High to Low)</option>
-            <option value="rating_asc">Sort: Rating (Low to High)</option>
-            <option value="release_desc">Sort: Release Date (Newest)</option>
-            <option value="release_asc">Sort: Release Date (Oldest)</option>
-            <option value="title_asc">Sort: Title (A-Z)</option>
-            <option value="title_desc">Sort: Title (Z-A)</option>
-          </select>
-          <select
-            value={languageFilter}
-            onChange={(e) => setLanguageFilter(e.target.value)}
-            className="rounded-lg border border-white/15 bg-black/40 px-3 py-2 text-sm text-white outline-none"
-          >
-            <option value="all">Language: All</option>
-            {languages.map((code) => (
-              <option key={code} value={code}>
-                {languageLabel(code)}
-              </option>
-            ))}
-          </select>
-          <select
-            value={industryFilter}
-            onChange={(e) => setIndustryFilter(e.target.value)}
-            className="rounded-lg border border-white/15 bg-black/40 px-3 py-2 text-sm text-white outline-none"
-          >
-            <option value="all">Industry: All</option>
-            {industries.map((industry) => (
-              <option key={industry} value={industry}>
-                {industry}
-              </option>
-            ))}
-          </select>
-        </div>
+        {!isInitialLoading && (
+          <div className="mt-5 grid gap-3 rounded-xl border border-white/12 bg-slate-900/45 p-3 md:grid-cols-3">
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="filter-select rounded-lg border border-cyan-300/20 bg-slate-900/45 px-3 py-2 text-sm text-cyan-50 outline-none backdrop-blur-md"
+            >
+              <option value="popularity_desc">Sort: Popularity (High to Low)</option>
+              <option value="rating_desc">Sort: Rating (High to Low)</option>
+              <option value="rating_asc">Sort: Rating (Low to High)</option>
+              <option value="release_desc">Sort: Release Date (Newest)</option>
+              <option value="release_asc">Sort: Release Date (Oldest)</option>
+              <option value="title_asc">Sort: Title (A-Z)</option>
+              <option value="title_desc">Sort: Title (Z-A)</option>
+            </select>
+            <select
+              value={languageFilter}
+              onChange={(e) => setLanguageFilter(e.target.value)}
+              className="filter-select rounded-lg border border-cyan-300/20 bg-slate-900/45 px-3 py-2 text-sm text-cyan-50 outline-none backdrop-blur-md"
+            >
+              <option value="all">Language: All</option>
+              {languages.map((code) => (
+                <option key={code} value={code}>
+                  {languageLabel(code)}
+                </option>
+              ))}
+            </select>
+            <select
+              value={industryFilter}
+              onChange={(e) => setIndustryFilter(e.target.value)}
+              className="filter-select rounded-lg border border-cyan-300/20 bg-slate-900/45 px-3 py-2 text-sm text-cyan-50 outline-none backdrop-blur-md"
+            >
+              <option value="all">Industry: All</option>
+              {industries.map((industry) => (
+                <option key={industry} value={industry}>
+                  {industry}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         {error && (
           <p className="mt-4 rounded-lg border border-red-300/30 bg-red-500/15 px-4 py-2 text-sm text-red-100">
@@ -195,14 +217,31 @@ export default function TVShowsPage() {
           </p>
         )}
 
-        <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-          {visibleItems.map((item) => (
-            <MediaCard key={`tv-${item.id}`} item={item} />
-          ))}
-        </div>
+        {isInitialLoading ? (
+          <CinematicLoader label="Loading TV shows" />
+        ) : (
+          <div className="relative mt-8 min-h-[320px]">
+            <div
+              className={[
+                "grid grid-cols-2 gap-4 transition-opacity duration-200 sm:grid-cols-3 lg:grid-cols-5",
+                isSorting ? "opacity-55" : "opacity-100",
+              ].join(" ")}
+            >
+              {displayItems.map((item) => (
+                <MediaCard key={`tv-${item.id}`} item={item} />
+              ))}
+            </div>
+
+            {isSorting && (
+              <div className="absolute inset-0 grid place-items-center rounded-2xl bg-slate-950/28 backdrop-blur-[2px]">
+                <CinematicLoader label="Sorting TV shows" />
+              </div>
+            )}
+          </div>
+        )}
 
         <div ref={loadMoreRef} className="py-8 text-center">
-          {loading && <p className="text-sm text-slate-300">Loading more TV shows...</p>}
+          {loading && items.length > 0 && <p className="text-sm text-slate-300">Loading more TV shows...</p>}
           {!hasMore && !loading && <p className="text-xs text-slate-400">No more TV shows</p>}
         </div>
       </section>

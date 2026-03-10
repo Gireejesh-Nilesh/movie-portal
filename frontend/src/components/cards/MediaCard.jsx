@@ -2,6 +2,8 @@ import { useEffect, useRef } from "react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
+const loadedPosterCache = new Set();
+
 const getMediaRoute = (mediaType, id) => {
   if (mediaType === "tv") {
     return `/tv/${id}`;
@@ -25,7 +27,11 @@ export default function MediaCard({ item, onLongHover, onHoverEnd }) {
 
   const route = getMediaRoute(item.mediaType, item.id);
   const timerRef = useRef(null);
+  const imageTimeoutRef = useRef(null);
   const [imageFailed, setImageFailed] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(
+    item?.posterUrl ? loadedPosterCache.has(item.posterUrl) : false,
+  );
 
   const handleMouseEnter = () => {
     timerRef.current = window.setTimeout(() => {
@@ -43,12 +49,29 @@ export default function MediaCard({ item, onLongHover, onHoverEnd }) {
 
   useEffect(() => {
     setImageFailed(false);
+    setImageLoaded(item?.posterUrl ? loadedPosterCache.has(item.posterUrl) : false);
+
+    if (imageTimeoutRef.current) {
+      window.clearTimeout(imageTimeoutRef.current);
+      imageTimeoutRef.current = null;
+    }
+
+    if (item?.posterUrl && !loadedPosterCache.has(item.posterUrl)) {
+      imageTimeoutRef.current = window.setTimeout(() => {
+        setImageFailed(true);
+        setImageLoaded(false);
+        imageTimeoutRef.current = null;
+      }, 8000);
+    }
   }, [item?.id, item?.posterUrl]);
 
   useEffect(() => {
     return () => {
       if (timerRef.current) {
         window.clearTimeout(timerRef.current);
+      }
+      if (imageTimeoutRef.current) {
+        window.clearTimeout(imageTimeoutRef.current);
       }
     };
   }, []);
@@ -62,13 +85,36 @@ export default function MediaCard({ item, onLongHover, onHoverEnd }) {
       onMouseLeave={handleMouseLeave}
     >
       <article className="group relative h-[300px] w-44 shrink-0 overflow-hidden rounded-2xl border border-white/10 bg-white/5 text-white">
-        <div className="h-full overflow-hidden bg-slate-900">
+        <div className="relative h-full overflow-hidden bg-slate-900">
+          {!imageFailed && !imageLoaded && (
+            <div className="media-card-skeleton absolute inset-0 z-[1] overflow-hidden bg-slate-900" />
+          )}
           {item.posterUrl && !imageFailed ? (
             <img
               src={item.posterUrl}
               alt={item.title}
-              onError={() => setImageFailed(true)}
-              className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+              onLoad={() => {
+                if (item.posterUrl) {
+                  loadedPosterCache.add(item.posterUrl);
+                }
+                if (imageTimeoutRef.current) {
+                  window.clearTimeout(imageTimeoutRef.current);
+                  imageTimeoutRef.current = null;
+                }
+                setImageLoaded(true);
+              }}
+              onError={() => {
+                if (imageTimeoutRef.current) {
+                  window.clearTimeout(imageTimeoutRef.current);
+                  imageTimeoutRef.current = null;
+                }
+                setImageFailed(true);
+                setImageLoaded(false);
+              }}
+              className={[
+                "h-full w-full object-cover transition duration-500 group-hover:scale-105",
+                imageLoaded ? "opacity-100" : "opacity-0",
+              ].join(" ")}
               loading="lazy"
             />
           ) : (

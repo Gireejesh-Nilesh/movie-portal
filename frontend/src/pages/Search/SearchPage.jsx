@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import MediaCard from "../../components/cards/MediaCard";
 import PersonCard from "../../components/cards/PersonCard";
+import CinematicLoader from "../../components/common/CinematicLoader";
 import PageFrame from "../../components/common/PageFrame";
 import {
   resetSearchState,
@@ -19,6 +20,7 @@ export default function SearchPage() {
   const visibleResults = results.filter((item) =>
     item.mediaType === "person" ? Boolean(item.profilePath) : Boolean(item.posterPath)
   );
+  const isInitialQueryLoading = Boolean(query) && loading && visibleResults.length === 0;
 
   useEffect(() => {
     const debounced = setTimeout(() => {
@@ -89,11 +91,13 @@ export default function SearchPage() {
           <p className="mt-6 text-slate-400">Start typing to search content.</p>
         )}
 
+        {isInitialQueryLoading && <CinematicLoader label="Loading search results" />}
+
         {query && visibleResults.length === 0 && !loading && (
           <p className="mt-6 text-slate-400">No results found.</p>
         )}
 
-        {visibleResults.length > 0 && (
+        {!isInitialQueryLoading && visibleResults.length > 0 && (
           <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
             {visibleResults.map((item) =>
               item.mediaType === "person" ? (
@@ -105,7 +109,9 @@ export default function SearchPage() {
           </div>
         )}
 
-        {loading && <p className="mt-6 text-sm text-slate-300">Loading more results...</p>}
+        {loading && visibleResults.length > 0 && (
+          <p className="mt-6 text-sm text-slate-300">Loading more results...</p>
+        )}
         <div ref={loadMoreRef} className="h-8 w-full" />
       </div>
     </PageFrame>

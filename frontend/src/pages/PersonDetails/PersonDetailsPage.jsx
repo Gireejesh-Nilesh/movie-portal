@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
+import CinematicLoader from "../../components/common/CinematicLoader";
 import PageFrame from "../../components/common/PageFrame";
 import { discoverApi } from "../../services/backend/discoverApi";
 
@@ -58,7 +59,7 @@ export default function PersonDetailsPage() {
           </p>
         )}
 
-        {loading && <p className="mt-4 text-sm text-slate-300">Loading details...</p>}
+        {loading && <CinematicLoader label="Loading profile" />}
 
         <div className="mt-5 grid gap-6 md:grid-cols-[260px_1fr]">
           <div className="overflow-hidden rounded-2xl border border-white/15 bg-slate-900">
