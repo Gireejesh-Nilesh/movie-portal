@@ -5,7 +5,9 @@
   "scripts": {
     "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "loadtest:public": "k6 run ../load-tests/public-load.js",
+    "loadtest:auth": "k6 run ../load-tests/auth-flow.js"
   },
   "keywords": [],
   "author": "",

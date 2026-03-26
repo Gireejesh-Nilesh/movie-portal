@@ -1,4 +1,7 @@
 const User = require("../../models/user.model");
+const Favorite = require("../../models/favorite.model");
+const WatchHistory = require("../../models/watch-history.model");
+const AdminMovie = require("../../models/admin-movie.model");
 const AppError = require("../../utils/app-error");
 const asyncHandler = require("../../utils/async-handler");
 
@@ -55,8 +58,31 @@ const deleteUser = asyncHandler(async (req, res) => {
   });
 });
 
+const getPlatformStats = asyncHandler(async (req, res) => {
+  const [usersCount, bannedUsersCount, moviesCount, favoritesCount, historyCount] =
+    await Promise.all([
+      User.countDocuments(),
+      User.countDocuments({ isBanned: true }),
+      AdminMovie.countDocuments(),
+      Favorite.countDocuments(),
+      WatchHistory.countDocuments(),
+    ]);
+
+  return res.status(200).json({
+    success: true,
+    stats: {
+      usersCount,
+      bannedUsersCount,
+      moviesCount,
+      favoritesCount,
+      historyCount,
+    },
+  });
+});
+
 module.exports = {
   getUsers,
   banUser,
   deleteUser,
+  getPlatformStats,
 };

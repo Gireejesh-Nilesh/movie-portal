@@ -3,27 +3,33 @@ const AppError = require("../../utils/app-error");
 const asyncHandler = require("../../utils/async-handler");
 
 const addFavorite = asyncHandler(async (req, res) => {
-  const { movieId, mediaType = "movie", title, posterPath = "", releaseDate = "" } =
-    req.body;
+  const {
+    movieId,
+    mediaType = "movie",
+    title,
+    posterPath = "",
+    releaseDate = "",
+  } = req.body;
 
-  const existingFavorite = await Favorite.findOne({
-    user: req.user._id,
-    movieId: String(movieId).trim(),
-    mediaType: String(mediaType).toLowerCase(),
-  });
-
-  if (existingFavorite) {
-    throw new AppError("Already in favorites", 409);
-  }
-
-  const favorite = await Favorite.create({
+  const favoritePayload = {
     user: req.user._id,
     movieId: String(movieId).trim(),
     mediaType: String(mediaType).toLowerCase(),
     title: String(title).trim(),
     posterPath: String(posterPath).trim(),
     releaseDate: String(releaseDate).trim(),
-  });
+  };
+
+  let favorite;
+  try {
+    // Let MongoDB's unique index arbitrate concurrent inserts safely.
+    favorite = await Favorite.create(favoritePayload);
+  } catch (error) {
+    if (error?.code === 11000) {
+      throw new AppError("Already in favorites", 409);
+    }
+    throw error;
+  }
 
   return res.status(201).json({
     success: true,

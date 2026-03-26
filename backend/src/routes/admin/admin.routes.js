@@ -9,6 +9,7 @@ const {
   getUsers,
   banUser,
   deleteUser,
+  getPlatformStats,
 } = require("../../controllers/admin/admin-users.controller");
 const { protect, authorizeRoles } = require("../../middlewares/auth.middleware");
 const validate = require("../../middlewares/validate.middleware");
@@ -31,6 +32,7 @@ router.put("/movies/:id", validate(updateAdminMovieSchema), updateMovie);
 router.delete("/movies/:id", validate(adminMovieIdParamSchema), deleteMovie);
 
 router.get("/users", getUsers);
+router.get("/stats", getPlatformStats);
 router.patch("/users/:id/ban", validate(adminBanUserSchema), banUser);
 router.delete("/users/:id", validate(adminUserIdParamSchema), deleteUser);
 
