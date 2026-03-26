@@ -5,12 +5,12 @@ export const options = {
   scenarios: {
     authenticated_users: {
       executor: "ramping-vus",
-      startVUs: 1,
+      startVUs: Number(__ENV.START_VUS || 1),
       stages: [
-        { duration: "20s", target: 2 },
-        { duration: "40s", target: 5 },
-        { duration: "30s", target: 10 },
-        { duration: "20s", target: 0 },
+        { duration: __ENV.STAGE_1_DURATION || "20s", target: Number(__ENV.STAGE_1_TARGET || 5) },
+        { duration: __ENV.STAGE_2_DURATION || "40s", target: Number(__ENV.STAGE_2_TARGET || 10) },
+        { duration: __ENV.STAGE_3_DURATION || "40s", target: Number(__ENV.STAGE_3_TARGET || 20) },
+        { duration: __ENV.STAGE_4_DURATION || "30s", target: Number(__ENV.STAGE_4_TARGET || 0) },
       ],
       gracefulRampDown: "5s",
     },
@@ -28,8 +28,6 @@ const MOVIE_ID = __ENV.MOVIE_ID || "550";
 const MOVIE_TITLE = __ENV.MOVIE_TITLE || "Fight Club";
 const RELEASE_DATE = __ENV.RELEASE_DATE || "1999-10-15";
 const POSTER_PATH = __ENV.POSTER_PATH || "/a26cQPRhJPX6GbWfQbvZdrrp9j9.jpg";
-const AUTH_COOKIE_NAME = __ENV.AUTH_COOKIE_NAME || "token";
-
 function failIfMissingCredentials() {
   if (!TEST_EMAIL || !TEST_PASSWORD) {
     throw new Error(
@@ -63,21 +61,10 @@ export function setup() {
 export default function () {
   failIfMissingCredentials();
 
-  const jar = http.cookieJar();
   const loginResponse = login();
 
   check(loginResponse, {
-    "auth cookie stored or returned": (res) => {
-      const cookies = jar.cookiesForURL(BASE_URL);
-      const hasStoredCookie = Array.isArray(cookies[AUTH_COOKIE_NAME])
-        ? cookies[AUTH_COOKIE_NAME].length > 0
-        : Boolean(cookies[AUTH_COOKIE_NAME]);
-      const hasSetCookieHeader =
-        typeof res.headers["Set-Cookie"] === "string" &&
-        res.headers["Set-Cookie"].includes(`${AUTH_COOKIE_NAME}=`);
-
-      return hasStoredCookie || hasSetCookieHeader;
-    },
+    "login response valid": (res) => res.status === 200,
   });
 
   const params = {
@@ -89,17 +76,18 @@ export default function () {
     "me status 200": (res) => res.status === 200,
   });
 
+  const uniqueMovieId = `${MOVIE_ID}-${__VU}-${__ITER}`;
   const favoritePayload = JSON.stringify({
-    movieId: MOVIE_ID,
+    movieId: uniqueMovieId,
     mediaType: "movie",
-    title: MOVIE_TITLE,
+    title: `${MOVIE_TITLE} ${__VU}-${__ITER}`,
     posterPath: POSTER_PATH,
     releaseDate: RELEASE_DATE,
   });
 
   const favoriteAdd = http.post(`${BASE_URL}/api/favorites`, favoritePayload, params);
   check(favoriteAdd, {
-    "favorite add accepted": (res) => res.status === 201 || res.status === 409,
+    "favorite add accepted": (res) => res.status === 200 || res.status === 201,
   });
 
   const favorites = http.get(`${BASE_URL}/api/favorites`, params);

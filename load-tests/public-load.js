@@ -3,10 +3,10 @@ import { check, sleep } from "k6";
 
 export const options = {
   stages: [
-    { duration: "20s", target: 5 },
-    { duration: "40s", target: 10 },
-    { duration: "30s", target: 20 },
-    { duration: "20s", target: 0 },
+    { duration: __ENV.STAGE_1_DURATION || "20s", target: Number(__ENV.STAGE_1_TARGET || 10) },
+    { duration: __ENV.STAGE_2_DURATION || "40s", target: Number(__ENV.STAGE_2_TARGET || 20) },
+    { duration: __ENV.STAGE_3_DURATION || "40s", target: Number(__ENV.STAGE_3_TARGET || 50) },
+    { duration: __ENV.STAGE_4_DURATION || "30s", target: Number(__ENV.STAGE_4_TARGET || 0) },
   ],
   thresholds: {
     http_req_failed: ["rate<0.05"],

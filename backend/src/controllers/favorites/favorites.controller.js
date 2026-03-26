@@ -20,13 +20,49 @@ const addFavorite = asyncHandler(async (req, res) => {
     releaseDate: String(releaseDate).trim(),
   };
 
+  const existingFavorite = await Favorite.findOne({
+    user: favoritePayload.user,
+    movieId: favoritePayload.movieId,
+    mediaType: favoritePayload.mediaType,
+  }).lean();
+
+  if (existingFavorite) {
+    return res.status(200).json({
+      success: true,
+      message: "Already in favorites",
+      favorite: existingFavorite,
+    });
+  }
+
   let favorite;
   try {
-    // Let MongoDB's unique index arbitrate concurrent inserts safely.
-    favorite = await Favorite.create(favoritePayload);
+    favorite = await Favorite.findOneAndUpdate(
+      {
+        user: favoritePayload.user,
+        movieId: favoritePayload.movieId,
+        mediaType: favoritePayload.mediaType,
+      },
+      {
+        $setOnInsert: favoritePayload,
+      },
+      {
+        upsert: true,
+        new: true,
+      }
+    );
   } catch (error) {
     if (error?.code === 11000) {
-      throw new AppError("Already in favorites", 409);
+      const duplicateFavorite = await Favorite.findOne({
+        user: favoritePayload.user,
+        movieId: favoritePayload.movieId,
+        mediaType: favoritePayload.mediaType,
+      }).lean();
+
+      return res.status(200).json({
+        success: true,
+        message: "Already in favorites",
+        favorite: duplicateFavorite,
+      });
     }
     throw error;
   }
