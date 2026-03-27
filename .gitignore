@@ -1,0 +1,8 @@
+.sfdx/
+backend/node_modules/
+frontend/node_modules/
+frontend/dist/
+backend/public/assets/
+load-tests/*.html
+load-tests/*.json
+backend/.env

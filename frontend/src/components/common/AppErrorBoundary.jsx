@@ -14,8 +14,6 @@ export default class AppErrorBoundary extends Component {
   }
 
   componentDidCatch(error) {
-    // Keep console visibility for quick debugging during development.
-    // eslint-disable-next-line no-console
     console.error("App crashed:", error);
   }
 
